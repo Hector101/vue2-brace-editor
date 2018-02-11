@@ -3,6 +3,7 @@
     ref="editor"
     :id="getId"
     :style="divStyle"
+    :class="className"
   >
   </div>
 </template>
@@ -39,6 +40,116 @@
         const { name } = this.$props;
         return name;
       }
+    },
+    watch: {
+      'mode': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.getSession().setMode('ace/mode/' + newVal);
+        }
+      },
+      'className': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          let appliedClasses = this.$refs.editor.class;
+          let appliedClassesArray = appliedClasses.trim().split(' ');
+          let oldClassesArray = oldVal.trim().split(' ');
+          oldClassesArray.forEach((oldClass) => {
+            let index = appliedClassesArray.indexOf(oldClass);
+            appliedClassesArray.splice(index, 1);
+          });
+          this.$refs.editor.class = ' ' + newVal + ' ' + appliedClassesArray.join(' ');
+        }
+      },
+      'theme': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.setTheme('ace/theme/' + newVal);
+        }
+      },
+      'fontSize': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.setFontSize(newVal);
+        }
+      },
+      'keyboardHandler': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          if (newVal) {
+            this.editor.setKeyboardHandler('ace/keyboard/' + newVal);
+          } else {
+            this.editor.setKeyboardHandler(null);
+          }
+        }
+      },
+      'wrapEnabled': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.getSession().setUseWrapMode(newVal);
+        }
+        
+        
+      },
+      'showPrintMargin': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.setShowPrintMargin(newVal);
+        }
+      },
+      'showGutter': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.renderer.setShowGutter(newVal);
+        }
+      },
+      'setOptions': function(newVal, oldVal) {
+        if (!isEqual(newVal, oldVal)) {
+          this.handleOptions(this.$props);
+        }
+      },
+      'markers': function(newVal, oldVal) {
+        if (!isEqual(newVal, oldVal) && (Array.isArray(newVal))) {
+          this.handleMarkers(newVal);
+        }
+      },
+      'annotations': function(newVal, oldVal) {
+        if (!isEqual(newVal, oldVal)) {
+          this.editor.getSession().setAnnotations(newVal || []);
+        }
+      },
+      'scrollMargin': function(newVal, oldVal) {
+          // this doesn't look like it works at all....
+        if (!isEqual(newVal, oldVal)) {
+          this.handleScrollMargins(newVal)
+        }
+      },
+      'width': function(newVal, oldVal) {
+        if(newVal !== oldVal){
+          this.editor.resize();
+        }
+      },
+      'height': function(newVal, oldVal) {
+        if(newVal !== oldVal){
+          this.editor.resize();
+        }
+      },
+      'focus': function(newVal, oldVal) {
+        if (newVal && !oldVal) {
+          this.editor.focus();
+        }
+      },
+      'value': function(newVal, oldVal) {
+        if (this.editor && this.editor.getValue() !== newVal) {
+          // editor.setValue is a synchronous function call, change event is emitted before setValue return.
+          this.silent = true;
+          const pos = this.editor.session.selection.toJSON();
+          this.editor.setValue(newVal, nextProps.cursorStart);
+          this.editor.session.selection.fromJSON(pos);
+          this.silent = false;
+        }
+      },
+      '$props': function(newVal, oldVal) {
+        for (let i = 0; i < editorOptions.length; i++) {
+          const option = editorOptions[i];
+          if (newVal[option] !== oldVal[option]) {
+            this.editor.setOption(option, newVal[option]);
+          }
+        }
+      },
+      deep: true
     },
     mounted() { // Mounted
       const {
@@ -149,85 +260,6 @@
       }
 
       this.editor.resize();
-
-      // Watch for props change
-      this.$watch('$props', function(nextProps, prevProps) {
-        for (let i = 0; i < editorOptions.length; i++) {
-          const option = editorOptions[i];
-          if (nextProps[option] !== prevProps[option]) {
-            this.editor.setOption(option, nextProps[option]);
-          }
-        }
-
-        if (nextProps.className !== prevProps.className) {
-          let appliedClasses = this.refEditor.className;
-          let appliedClassesArray = appliedClasses.trim().split(' ');
-          let oldClassesArray = prevProps.className.trim().split(' ');
-          oldClassesArray.forEach((oldClass) => {
-            let index = appliedClassesArray.indexOf(oldClass);
-            appliedClassesArray.splice(index, 1);
-          });
-          this.refEditor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
-        }
-
-        if (nextProps.mode !== prevProps.mode) {
-          this.editor.getSession().setMode('ace/mode/' + nextProps.mode);
-        }
-        if (nextProps.theme !== prevProps.theme) {
-          this.editor.setTheme('ace/theme/' + nextProps.theme);
-        }
-        if (nextProps.keyboardHandler !== prevProps.keyboardHandler) {
-          if (nextProps.keyboardHandler) {
-            this.editor.setKeyboardHandler('ace/keyboard/' + nextProps.keyboardHandler);
-          } else {
-            this.editor.setKeyboardHandler(null);
-          }
-        }
-        if (nextProps.fontSize !== prevProps.fontSize) {
-          this.editor.setFontSize(nextProps.fontSize);
-        }
-        if (nextProps.wrapEnabled !== prevProps.wrapEnabled) {
-          this.editor.getSession().setUseWrapMode(nextProps.wrapEnabled);
-        }
-        if (nextProps.showPrintMargin !== prevProps.showPrintMargin) {
-          this.editor.setShowPrintMargin(nextProps.showPrintMargin);
-        }
-        if (nextProps.showGutter !== prevProps.showGutter) {
-          this.editor.renderer.setShowGutter(nextProps.showGutter);
-        }
-        if (!isEqual(nextProps.setOptions, prevProps.setOptions)) {
-          this.handleOptions(nextProps);
-        }
-        if (!isEqual(nextProps.annotations, prevProps.annotations)) {
-          this.editor.getSession().setAnnotations(nextProps.annotations || []);
-        }
-        if (!isEqual(nextProps.markers, prevProps.markers) && (Array.isArray(nextProps.markers))) {
-          this.handleMarkers(nextProps.markers);
-        }
-
-        // this doesn't look like it works at all....
-        if (!isEqual(nextProps.scrollMargin, prevProps.scrollMargin)) {
-          this.handleScrollMargins(nextProps.scrollMargin)
-        }
-        if (this.editor && this.editor.getValue() !== nextProps.value) {
-          // editor.setValue is a synchronous function call, change event is emitted before setValue return.
-          this.silent = true;
-          const pos = this.editor.session.selection.toJSON();
-          this.editor.setValue(nextProps.value, nextProps.cursorStart);
-          this.editor.session.selection.fromJSON(pos);
-          this.silent = false;
-        }
-
-        if (nextProps.focus && !prevProps.focus) {
-          this.editor.focus();
-        }
-
-        if(prevProps.height !== nextProps.height || prevProps.width !== nextProps.width){
-          this.editor.resize();
-        }
-      }, {
-          deep: true
-      })
     }, // Methods
     methods: {
       debounce(fn, delay) {

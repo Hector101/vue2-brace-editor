@@ -3,6 +3,7 @@
   ref="editor"
   :id="getId"
   :style="divStyle"
+  :class="className"
   >
   </div>  
 </template>
@@ -35,9 +36,134 @@
         return name;
       }
     },
+    watch: {
+      'orientation': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.env.split.setOrientation(newVal === 'below'
+            ?
+              this.editor.env.split.BELOW
+            :
+              this.editor.env.split.BESIDE);
+        }
+      },
+      'splits': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.env.split.setSplits(newVal)
+        };
+      },
+      'mode': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            editor.getSession().setMode('ace/mode/' + newVal);
+          }
+        });
+      },
+      'keyboardHandler': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            if (newVal) {
+              editor.setKeyboardHandler('ace/keyboard/' + newVal);
+            } else {
+              editor.setKeyboardHandler(null);
+            }
+          }
+        });
+      },
+      'fontSize': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            editor.setFontSize(newVal);
+          }
+        });
+      },
+      'wrapEnabled': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            editor.getSession().setUseWrapMode(newVal);
+          }
+        });
+      },
+      'showPrintMargin': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            editor.setShowPrintMargin(newVal);
+          }
+        });
+      },
+      'showGutter': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          if (newVal !== oldVal) {
+            editor.renderer.setShowGutter(newVal);
+          }
+        });
+      },
+      'setOptions': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          for (let i = 0; i < editorOptions.length; i++) {
+            const option = editorOptions[i];
+            if (newVal[option] !== oldVal[option]) {
+              editor.setOption(option, newVal[option]);
+            }
+          }
+          if (!isEqual(newVal, oldVal)) {
+            this.handleOptions(newVal, editor);
+          }
+        });
+      },
+      'value': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          const nextValue = get(newVal, index, '')
+          if (editor.getValue() !== nextValue) {
+            // editor.setValue is a synchronous function call, change event is emitted before setValue return.
+            this.silent = true;
+            const pos = editor.session.selection.toJSON();
+            editor.setValue(nextValue, this.$props.cursorStart);
+            editor.session.selection.fromJSON(pos);
+            this.silent = false;
+          }
+        });
+      },
+      'annotations': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          const newAnnotations = get(newVal, index, [])
+          const oldAnnotations = get(oldVal, index, [])
+          if (!isEqual(newAnnotations, oldAnnotations)) {
+            editor.getSession().setAnnotations(newAnnotations);
+          }
+        });
+      },
+      'markers': function(newVal, oldVal) {
+        this.editor.env.split.forEach((editor, index) => {
+          const newMarkers = get(newVal, index, [])
+          const oldMarkers = get(oldVal, index, [])
+          if (!isEqual(newMarkers, oldMarkers) && Array.isArray(newMarkers)) {
+            this.handleMarkers(newMarkers, editor);
+          }
+        });
+      },
+      'theme': function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.editor.env.split.setTheme('ace/theme/' + newVal);
+        }
+      },
+      'focus': function(newVal, oldVal) {
+        if (newVal && !oldVal) {
+          this.splitEditor.focus();
+        }
+      },
+      'height': function(newVal, oldVal) {
+        if(newVal !== oldVal) {
+          this.editor.resize();
+        }
+      },
+      'width': function(newVal, oldVal) {
+        if(newVal !== oldVal) {
+          this.editor.resize();
+        }
+      },
+    },
     mounted() {
       const {
-        className,
         onBeforeLoad,
         mode,
         focus,
@@ -67,7 +193,7 @@
 
       const editorProps = Object.keys(this.$props.editorProps);
 
-      var split = new Split(this.editor.container,`ace/theme/${theme}`, splits);
+      const split = new Split(this.editor.container,`ace/theme/${theme}`, splits);
       this.editor.env.split = split;
 
       this.splitEditor = split.getEditor(0);
@@ -134,10 +260,6 @@
         }
       })
 
-      if (className) {
-        this.refEditor.className += ' ' + className;
-      }
-
       if (focus) {
         this.splitEditor.focus();
       }
@@ -148,99 +270,6 @@
       if (onLoad) {
         onLoad(sp);
       }
-
-      this.$watch('$props', function (nextProps, prevProps) {
-        const split = this.editor.env.split
-
-        if (nextProps.splits !== prevProps.splits) {
-          split.setSplits(nextProps.splits)
-        }
-
-        if (nextProps.orientation !== prevProps.orientation) {
-          split.setOrientation( nextProps.orientation === 'below' ? split.BELOW : split.BESIDE);
-        }
-
-        split.forEach((editor, index) => {
-
-          if (nextProps.mode !== prevProps.mode) {
-            editor.getSession().setMode('ace/mode/' + nextProps.mode);
-          }
-          if (nextProps.keyboardHandler !== prevProps.keyboardHandler) {
-            if (nextProps.keyboardHandler) {
-              editor.setKeyboardHandler('ace/keyboard/' + nextProps.keyboardHandler);
-            } else {
-              editor.setKeyboardHandler(null);
-            }
-          }
-          if (nextProps.fontSize !== prevProps.fontSize) {
-            editor.setFontSize(nextProps.fontSize);
-          }
-          if (nextProps.wrapEnabled !== prevProps.wrapEnabled) {
-            editor.getSession().setUseWrapMode(nextProps.wrapEnabled);
-          }
-          if (nextProps.showPrintMargin !== prevProps.showPrintMargin) {
-            editor.setShowPrintMargin(nextProps.showPrintMargin);
-          }
-          if (nextProps.showGutter !== prevProps.showGutter) {
-            editor.renderer.setShowGutter(nextProps.showGutter);
-          }
-
-          for (let i = 0; i < editorOptions.length; i++) {
-            const option = editorOptions[i];
-            if (nextProps[option] !== prevProps[option]) {
-              editor.setOption(option, nextProps[option]);
-            }
-          }
-          if (!isEqual(nextProps.setOptions, prevProps.setOptions)) {
-            this.handleOptions(nextProps, editor);
-          }
-          const nextValue = get(nextProps.value, index, '')
-          if (editor.getValue() !== nextValue) {
-            // editor.setValue is a synchronous function call, change event is emitted before setValue return.
-            this.silent = true;
-            const pos = editor.session.selection.toJSON();
-            editor.setValue(nextValue, nextProps.cursorStart);
-            editor.session.selection.fromJSON(pos);
-            this.silent = false;
-          }
-          const newAnnotations = get(nextProps.annotations, index, [])
-          const oldAnnotations = get(prevProps.annotations, index, [])
-          if (!isEqual(newAnnotations, oldAnnotations)) {
-            editor.getSession().setAnnotations(newAnnotations);
-          }
-
-          const newMarkers = get(nextProps.markers, index, [])
-          const oldMarkers = get(prevProps.markers, index, [])
-          if (!isEqual(newMarkers, oldMarkers) && Array.isArray(newMarkers)) {
-            this.handleMarkers(newMarkers, editor);
-          }
-
-        })
-
-        if (nextProps.className !== prevProps.className) {
-          let appliedClasses = this.refEditor.className;
-          let appliedClassesArray = appliedClasses.trim().split(' ');
-          let oldClassesArray = prevProps.className.trim().split(' ');
-          oldClassesArray.forEach((oldClass) => {
-            let index = appliedClassesArray.indexOf(oldClass);
-            appliedClassesArray.splice(index, 1);
-          });
-          this.refEditor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
-        }
-
-        if (nextProps.theme !== prevProps.theme) {
-          split.setTheme('ace/theme/' + nextProps.theme);
-        }
-
-        if (nextProps.focus && !prevProps.focus) {
-          this.splitEditor.focus();
-        }
-        if(nextProps.height !== prevProps.height || nextProps.width !== prevProps.width) {
-          this.editor.resize();
-        }
-      }, {
-        deep: true,
-      })
     },
     methods: {
       onChangeUpdate(event) {
@@ -328,7 +357,7 @@
         });
       },
     },
-    beforeDestroy() {
+    destroyed() {
       this.editor.destroy();
       this.editor = null;
     }
