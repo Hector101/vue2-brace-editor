@@ -18,7 +18,7 @@
     "brace",
     "web editor"
   ],
-  "repository": "https://github.com/Hector101/vue-ace.git",
+  "repository": "https://github.com/Hector101/vue2-brace-editor.git",
   "author": "hector101 <hector1014really32@gmail.com>",
   "license": "MIT",
   "devDependencies": {
