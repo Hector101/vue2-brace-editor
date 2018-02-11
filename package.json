@@ -1,6 +1,6 @@
 {
   "name": "vue2-brace-editor",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Vue component for integrating ace editor using brace",
   "main": "dist/vue-ace.min.js",
   "scripts": {
