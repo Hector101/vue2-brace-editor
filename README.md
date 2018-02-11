@@ -159,3 +159,48 @@ This allows for a split editor which can create multiple linked instances of the
 |annotations| | Array of Arrays | annotations to show in the editor i.e. `[{ row: 0, column: 2, type: 'error', text: 'Some error.'}]`, displayed in the gutter|
 |markers| | Array of Arrays | [markers](https://ace.c9.io/api/edit_session.html#EditSession.addMarker) to show in the editor, i.e. `[{ startRow: 0, startCol: 2, endRow: 1, endCol: 20, className: 'error-marker', type: 'background' }]`|
 |style| | Object  | camelCased properties |
+
+## How to contribute
+To contribute, fork this repo to your private repository and create a pull request based on the feature you want to add.
+However ensure to follow the AirBnB coding style guide.
+
+## Disclaimer
+This app and its functions are limited by time constraint and is in no way at its best.
+
+### FAQ
++ Can I fork this repository?
+  + Yes you can.
++ Can I contribute to the project?
+  + Yes you can, however it is advised you follow the AirBnB style guide for your PR to be considered being merged to the project
++ Can I modify the project, for usage?
+  + This project is an open source project, so you can.
+
+## Dependencies
++  **[brace](https://www.npmjs.com/package/brace)** - browserify compatible version of the ace editor.
+
+## Authors
+Hector Johnson - github.com/hector101
+
+
+## License
+
+(The MIT License)
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
