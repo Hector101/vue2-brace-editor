@@ -47,18 +47,6 @@
           this.editor.getSession().setMode('ace/mode/' + newVal);
         }
       },
-      'className': function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          let appliedClasses = this.$refs.editor.class;
-          let appliedClassesArray = appliedClasses.trim().split(' ');
-          let oldClassesArray = oldVal.trim().split(' ');
-          oldClassesArray.forEach((oldClass) => {
-            let index = appliedClassesArray.indexOf(oldClass);
-            appliedClassesArray.splice(index, 1);
-          });
-          this.$refs.editor.class = ' ' + newVal + ' ' + appliedClassesArray.join(' ');
-        }
-      },
       'theme': function(newVal, oldVal) {
         if (newVal !== oldVal) {
           this.editor.setTheme('ace/theme/' + newVal);
@@ -153,7 +141,6 @@
     },
     mounted() { // Mounted
       const {
-        className,
         onBeforeLoad,
         onValidate,
         mode,
@@ -245,10 +232,6 @@
 
       if (keyboardHandler) {
         this.editor.setKeyboardHandler('ace/keyboard/' + keyboardHandler);
-      }
-
-      if (className) {
-        this.refEditor.className += ' ' + className;
       }
 
       if (focus) {
