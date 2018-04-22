@@ -124,7 +124,7 @@
           // editor.setValue is a synchronous function call, change event is emitted before setValue return.
           this.silent = true;
           const pos = this.editor.session.selection.toJSON();
-          this.editor.setValue(newVal, nextProps.cursorStart);
+          this.editor.setValue(newVal, pos.cursorStart);
           this.editor.session.selection.fromJSON(pos);
           this.silent = false;
         }
